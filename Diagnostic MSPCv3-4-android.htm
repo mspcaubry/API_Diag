@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1e3a5f">
+<title>Diagnostic MSPC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+:root{
+  --bl:#1e3a5f;--blm:#2563eb;--blc:#dbeafe;--blp:#eff6ff;
+  --orm:#ea580c;--orc:#fff7ed;
+  --vtm:#16a34a;--vtc:#f0fdf4;
+  --jam:#d97706;--jac:#fefce8;
+  --rgm:#dc2626;--rgc:#fff1f2;
+  --vim:#7c3aed;--vic:#f5f3ff;
+  --tur:#0e7490;--turc:#ecfeff;
+  --grd:#334155;--grc:#f8fafc;--grb:#e2e8f0;--grm:#64748b;
+  --wh:#ffffff;--bk:#0f172a;
+  --r:14px;--rs:10px;--rss:8px;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.08);
+  --fs:15px;--fsm:13px;--fss:12px;--fxs:11px;
+  --nav-h:62px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:#f1f5f9;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--fs);color:var(--bk)}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:#f1f5f9;max-width:520px;margin:0 auto}
+#app::before{content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;height:4px;background:var(--orm);z-index:100}
+.topbar{background:var(--bk);color:var(--wh);padding:12px 16px 10px;flex-shrink:0;position:relative;overflow:hidden}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--orm),var(--blm))}
+.topbar-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.topbar h1{font-size:17px;font-weight:700;letter-spacing:-.2px;line-height:1.2}
+.topbar .sub{font-size:11px;opacity:.65;margin-top:2px;font-weight:400}
+.topbar-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;flex-shrink:0;align-self:flex-start}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(var(--nav-h) + var(--safe-b) + 14px);scroll-behavior:smooth}
+.bottomnav{position:absolute;bottom:0;left:0;right:0;background:var(--wh);border-top:1px solid var(--grb);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:var(--safe-b);z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,.08);transition:transform .25s ease,opacity .25s ease,background .25s ease;transform:translateY(calc(100% - 38px));opacity:.45;overflow:hidden;}
+.bottomnav:hover{transform:translateY(0);opacity:1;background:rgba(255,255,255,.98);}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;border:none;background:transparent;cursor:pointer;transition:all .15s;appearance:none;-webkit-appearance:none;min-height:var(--nav-h)}
+.nav-btn:active{opacity:.6;transform:scale(.93)}
+.nav-btn:hover{background:rgba(59,130,246,.08);}
+.nav-icon{font-size:22px;line-height:1;transition:transform .2s,color .15s}
+.nav-label{font-size:10px;font-weight:600;color:var(--grm);opacity:0;transition:opacity .15s,color .15s;}
+.bottomnav:hover .nav-label, .nav-btn.active .nav-label{opacity:1;color:var(--blm)}
+.nav-btn:hover .nav-icon{transform:scale(1.05)}
+.nav-btn.active .nav-icon{transform:scale(1.1)}
+.screen{display:none;flex-direction:column;height:100%}
+.screen.active{display:flex}
+.card{background:var(--wh);border:1px solid var(--grb);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--grm);margin-bottom:10px}
+.ibox{border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;border-left:4px solid}
+.ibox p{font-size:var(--fsm);line-height:1.6}
+.ibox strong{font-weight:600}
+.ibox.bl{background:var(--blp);border-color:var(--blm)}
+.ibox.vt{background:var(--vtc);border-color:var(--vtm)}
+.ibox.rg{background:var(--rgc);border-color:var(--rgm)}
+.ibox.or{background:var(--wh);border-color:var(--orm)}
+.ibox.ja{background:var(--jac);border-color:var(--jam)}
+.ibox.vi{background:var(--vic);border-color:var(--vim)}
+.ibox.tu{background:var(--turc);border-color:var(--tur)}
+.ibox.gy{background:var(--grc);border-color:var(--grb)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 16px;border-radius:var(--rs);border:none;font-size:var(--fs);font-weight:600;cursor:pointer;width:100%;margin-bottom:10px;transition:transform .12s,opacity .12s;appearance:none;-webkit-appearance:none;font-family:inherit}
+.btn:active{transform:scale(.96);opacity:.85}
+.btn-primary{background:var(--blm);color:var(--wh)}
+.btn-success{background:var(--vtm);color:var(--wh)}
+.btn-danger{background:var(--rgm);color:var(--wh)}
+.btn-warn{background:var(--jam);color:var(--wh)}
+.btn-ghost{background:var(--wh);color:var(--bk);border:1.5px solid var(--grb)}
+.btn-sm{padding:9px 14px;font-size:var(--fsm)}
+.sec-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--grm);margin:16px 0 8px;padding-left:2px;display:flex;align-items:center;gap:6px}
+.sec-hdr::after{content:'';flex:1;height:1px;background:var(--grb)}
+.inp{width:100%;background:var(--grc);border:1.5px solid var(--grb);border-radius:var(--rs);padding:11px 13px;font-size:var(--fsm);color:var(--bk);font-family:inherit;appearance:none;-webkit-appearance:none;transition:border-color .2s}
+.inp:focus{outline:none;border-color:var(--blm);background:var(--wh)}
+.inp-grp{margin-bottom:10px}
+.inp-lbl{font-size:11px;font-weight:700;color:var(--grm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+textarea.inp{resize:none;min-height:72px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.fade-in{animation:fadeIn .25s ease}
+
+/* ── LED voyant ─────────────────────────────── */
+.led{display:inline-block;width:14px;height:14px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,.15)}
+.led-green{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.6)}
+.led-red{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,.6)}
+.led-orange{background:#f97316;box-shadow:0 0 6px rgba(249,115,22,.6)}
+.led-yellow{background:#eab308;box-shadow:0 0 6px rgba(234,179,8,.6)}
+.led-off{background:#6b7280;opacity:.4}
+.led-blink{animation:pulse 1s infinite}
+
+/* ── API status panel ───────────────────────── */
+.api-panel{background:var(--grc);border:1.5px solid var(--grb);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.api-panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--grm);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.api-voyant-row{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--grb)}
+.api-voyant-row:last-child{border-bottom:none;padding-bottom:0}
+.api-voyant-label{font-size:var(--fsm);font-weight:500}
+.api-voyant-meaning{font-size:var(--fss);color:var(--grm)}
+.api-sel{display:flex;gap:5px}
+.api-sel-btn{padding:4px 10px;border-radius:20px;border:1.5px solid;font-size:11px;font-weight:700;cursor:pointer;background:transparent;transition:all .12s;appearance:none;-webkit-appearance:none}
+.api-sel-btn:active{transform:scale(.92)}
+
+/* ── Observation wizard ─────────────────────── */
+.obs-step{background:var(--wh);border:2px solid var(--grb);border-radius:var(--r);padding:14px;margin-bottom:10px;transition:border-color .2s}
+.obs-step.active-step{border-color:var(--blm);background:var(--blp)}
+.obs-step.done-step{border-color:var(--vtm);background:var(--vtc)}
+.obs-step.warn-step{border-color:var(--rgm);background:var(--rgc)}
+.obs-header{display:flex;align-items:flex-start;gap:10px}
+.obs-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;background:var(--grc);color:var(--grm);border:1.5px solid var(--grb)}
+.obs-step.active-step .obs-num{background:var(--blm);color:var(--wh);border-color:var(--blm)}
+.obs-step.done-step .obs-num{background:var(--vtm);color:var(--wh);border-color:var(--vtm)}
+.obs-step.warn-step .obs-num{background:var(--rgm);color:var(--wh);border-color:var(--rgm)}
+.obs-body h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.obs-body p{font-size:var(--fsm);color:var(--grd);line-height:1.5}
+.obs-actions{margin-top:10px;display:grid;gap:6px}
+.obs-btn{padding:10px 14px;border-radius:var(--rs);border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;appearance:none;-webkit-appearance:none;font-family:inherit;display:flex;align-items:center;gap:6px}
+.obs-btn:active{transform:scale(.95)}
+.obs-btn-vt{background:var(--vtm);color:var(--wh)}
+.obs-btn-rg{background:var(--rgm);color:var(--wh)}
+.obs-btn-or{background:var(--jam);color:var(--wh)}
+.obs-btn-bl{background:var(--blm);color:var(--wh)}
+.obs-btn-gy{background:var(--grc);color:var(--grd);border:1.5px solid var(--grb)}
+
+/* ── IHM card ───────────────────────────────── */
+.ihm-msg-row{display:flex;gap:10px;align-items:flex-start;padding:8px;background:var(--grc);border-radius:var(--rs);margin-bottom:6px;cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.ihm-msg-row.sel{background:var(--blp);border-color:var(--blm)}
+.ihm-msg-row:active{opacity:.7}
+.ihm-dot{width:10px;height:10px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.ihm-msg-txt{font-size:var(--fsm);flex:1;line-height:1.4}
+.ihm-msg-type{font-size:10px;font-weight:700;flex-shrink:0;align-self:center}
+
+/* ── Q cards (arbre logiciel) ──────────────── */
+.q-card{border-radius:var(--r);padding:16px;margin-bottom:14px;animation:fadeIn .25s ease}
+.q-card.q1{background:var(--blp);border:2px solid var(--blm)}
+.q-card.q2{background:var(--jac);border:2px solid var(--jam)}
+.q-card.q3{background:var(--vtc);border:2px solid var(--vtm)}
+.q-step{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.q-step-dot{width:6px;height:6px;border-radius:50%}
+.q-step.bl{color:var(--blm)}.q-step.bl .q-step-dot{background:var(--blm)}
+.q-step.ja{color:var(--jam)}.q-step.ja .q-step-dot{background:var(--jam)}
+.q-step.vt{color:var(--vtm)}.q-step.vt .q-step-dot{background:var(--vtm)}
+.q-title{font-size:16px;font-weight:700;line-height:1.3;margin-bottom:8px}
+.q-sub{font-size:var(--fsm);line-height:1.5;opacity:.8;margin-bottom:12px}
+.q-hint{font-size:var(--fss);background:rgba(0,0,0,.06);border-radius:var(--rss);padding:8px 10px;margin-bottom:12px;line-height:1.5}
+.ans-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ans-btn{padding:14px 8px;border-radius:var(--rs);border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;appearance:none;-webkit-appearance:none;font-family:inherit}
+.ans-btn:active{transform:scale(.95)}
+.ans-yes{background:var(--vtm);color:var(--wh)}
+.ans-no{background:var(--rgm);color:var(--wh)}
+
+/* ── Tests ──────────────────────────────────── */
+.test-item{background:var(--wh);border:1px solid var(--grb);border-radius:var(--rs);padding:12px;margin-bottom:8px;transition:border-color .2s,background .2s}
+.test-item.ok-state{border-color:var(--vtm);background:var(--vtc)}
+.test-item.nok-state{border-color:var(--rgm);background:var(--rgc)}
+.test-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.test-n{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--grm)}
+.test-checks{display:flex;gap:6px;flex-shrink:0}
+.chk{padding:5px 12px;border-radius:20px;border:1.5px solid;font-size:11px;font-weight:700;cursor:pointer;background:transparent;transition:all .12s;appearance:none;-webkit-appearance:none;font-family:inherit}
+.chk:active{transform:scale(.92)}
+.chk-ok{border-color:var(--vtm);color:var(--vtm)}
+.chk-nok{border-color:var(--rgm);color:var(--rgm)}
+.chk.on-ok{background:var(--vtm);color:var(--wh);border-color:var(--vtm)}
+.chk.on-nok{background:var(--rgm);color:var(--wh);border-color:var(--rgm)}
+.test-pt{font-size:14px;font-weight:600;margin-bottom:4px}
+.test-desc{font-size:var(--fsm);color:var(--grd);line-height:1.5;margin-bottom:8px}
+.test-tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.tag-tool{background:var(--blp);color:var(--blm)}
+.tag-ok{background:var(--vtc);color:var(--vtm)}
+.nok-banner{background:var(--rgm);color:var(--wh);border-radius:var(--rss);padding:10px 12px;margin-top:8px;font-size:var(--fsm);font-weight:600}
+.prog-wrap{margin-bottom:12px}
+.prog-bar{background:var(--grb);border-radius:4px;height:6px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .4s ease;background:var(--vtm)}
+.prog-lbl{font-size:var(--fxs);color:var(--grm);margin-top:4px;font-weight:500}
+.result-card{border-radius:var(--r);padding:16px;margin-bottom:12px;animation:fadeIn .3s ease}
+.result-card.found{background:var(--rgc);border:2px solid var(--rgm)}
+.result-card.done{background:var(--vtc);border:2px solid var(--vtm)}
+.result-title{font-weight:700;font-size:15px;margin-bottom:6px}
+.result-title.rg{color:var(--rgm)}
+.result-title.vt{color:var(--vtm)}
+.result-desc{font-size:var(--fsm);line-height:1.5;color:var(--grd)}
+
+/* ── LOTO ───────────────────────────────────── */
+.loto-step{display:flex;gap:12px;padding:12px;background:var(--wh);border:1px solid var(--grb);border-radius:var(--rs);margin-bottom:8px;box-shadow:var(--shadow-sm)}
+.loto-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;color:var(--wh)}
+.loto-body h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.loto-body p{font-size:var(--fss);color:var(--grm);line-height:1.5}
+.energy-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--wh);border:1px solid var(--grb);border-radius:var(--rs);margin-bottom:6px}
+.energy-main .en{font-size:13px;font-weight:600}
+.energy-main .ei{font-size:11px;color:var(--grm);margin-top:1px}
+.energy-btns{display:flex;gap:5px}
+.mc{width:30px;height:30px;border-radius:var(--rss);border:2px solid;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s;background:transparent}
+.mc:active{transform:scale(.88)}
+.mc-c{border-color:var(--rgm);color:var(--rgm)}
+.mc-e{border-color:var(--orm);color:var(--orm)}
+.mc-v{border-color:var(--vtm);color:var(--vtm)}
+.mc-c.on{background:var(--rgm);color:var(--wh)}
+.mc-e.on{background:var(--orm);color:var(--wh)}
+.mc-v.on{background:var(--vtm);color:var(--wh)}
+.chkrow{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--wh);border:1px solid var(--grb);border-radius:var(--rs);margin-bottom:6px;cursor:pointer}
+.chkrow:active{background:var(--grc)}
+.chkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--grb);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.chkbox.on{background:var(--vtm);border-color:var(--vtm)}
+.chkbox.on::after{content:'';width:5px;height:10px;border:2.5px solid var(--wh);border-top:none;border-left:none;transform:rotate(45deg) translate(0,-1px)}
+.chkrow-txt{font-size:var(--fsm);flex:1;line-height:1.4}
+.type-sel-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.type-sel-btn{padding:10px 6px;border-radius:var(--rs);border:2px solid;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;background:transparent;appearance:none;-webkit-appearance:none;font-family:inherit}
+.type-sel-btn:active{transform:scale(.93)}
+.tsb-1{border-color:var(--blm);color:var(--blm)}.tsb-1.sel{background:var(--blm);color:var(--wh)}
+.tsb-2{border-color:var(--jam);color:var(--jam)}.tsb-2.sel{background:var(--jam);color:var(--wh)}
+.tsb-3{border-color:var(--vtm);color:var(--vtm)}.tsb-3.sel{background:var(--vtm);color:var(--wh)}
+.recap-card{border-radius:var(--r);padding:14px;margin-bottom:10px;cursor:pointer;transition:transform .15s}
+.recap-card:active{transform:scale(.97)}
+.recap-card.t1{background:var(--blp);border:2px solid var(--blm)}
+.recap-card.t2{background:var(--jac);border:2px solid var(--jam)}
+.recap-card.t3{background:var(--vtc);border:2px solid var(--vtm)}
+.rc-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.rc-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;color:var(--wh)}
+.rc-name{font-size:14px;font-weight:700}
+.t1 .rc-name{color:var(--blm)}.t2 .rc-name{color:var(--jam)}.t3 .rc-name{color:var(--vtm)}
+.rc-crit{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:var(--fss)}
+.rc-crit-lbl{color:var(--grm);font-weight:600;white-space:nowrap}
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.module-card{background:var(--wh);border:1px solid var(--grb);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow-sm)}
+.module-card:active{transform:scale(.95);opacity:.85}
+.mc-icon{font-size:26px;margin-bottom:8px;line-height:1}
+.mc-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.mc-sub{font-size:11px;color:var(--grm);line-height:1.3}
+.chain{display:flex;align-items:center;overflow-x:auto;padding:8px 0;-webkit-overflow-scrolling:touch}
+.chain-node{text-align:center;padding:10px 8px;border-radius:10px;border:2px solid;min-width:72px;flex-shrink:0}
+.chain-node .cn-title{font-size:10px;font-weight:700}
+.chain-node .cn-sub{font-size:9px;margin-top:2px;opacity:.7}
+.chain-arrow{padding:0 6px;font-size:16px;color:var(--grm);flex-shrink:0}
+@media(prefers-color-scheme:dark){
+  :root{--bk:#f1f5f9;--grc:#1e293b;--grb:#334155;--grm:#94a3b8;--grd:#cbd5e1;--wh:#1e293b}
+  #app,body{background:#0f172a}
+  .content{background:#0f172a}
+  .api-panel{background:#0f172a}
+  .card,.test-item,.loto-step,.energy-row,.chkrow,.module-card,.obs-step{background:#1e293b;border-color:#334155}
+  .inp{background:#1e293b;border-color:#334155;color:#f1f5f9}
+  .inp:focus{background:#0f172a}
+  .bottomnav{background:#1e293b;border-top-color:#334155}
+}
+@media print {
+  @page { size: A4 portrait; margin: 14mm; }
+  html, body, #app { height: auto !important; overflow: visible !important; background: #fff !important; color: #000 !important; }
+  body { margin: 0; font-size: 11px; line-height: 1.35; }
+  #app { position: static !important; max-width: none !important; margin: 0 !important; }
+  .content { overflow: visible !important; padding: 0 !important; }
+  .screen { display: none !important; position: static !important; }
+  #s-conclusion { display: block !important; }
+  #conclusion-report { display: block !important; }
+  #s-conclusion > .content > .card:not(#conclusion-report) { display: none !important; }
+  .topbar, .bottomnav, .nav-btn, .btn, .api-sel, .type-sel-row, .obs-actions, .module-grid, .module-card, .q-card, .loto-step, .energy-row, .result-card, .test-item, .recap-card, .api-voyant-row button, .chkbox, .api-sel-btn, .type-sel-btn { display: none !important; }
+  .card { box-shadow: none !important; border-color: #000 !important; }
+  .card, .ibox { page-break-inside: avoid; }
+  .inp, textarea { border: none !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; color: #000 !important; }
+  .inp-lbl { color: #000 !important; font-size: 12px !important; }
+  input, textarea { border: none !important; background: transparent !important; color: #000 !important; }
+  .chkrow { display: block; padding: 0; border: none; }
+  .chkrow .chkbox { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; vertical-align: middle; margin-right: 6px; }
+  .chkrow .chkbox.on { background: #000; }
+  .chkrow-txt { display: inline; }
+  .content, .card { margin-bottom: 6mm; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar" id="topbar">
+    <div class="topbar-row">
+      <div>
+        <h1 id="topbar-title">Observation API / IHM</h1>
+        <div class="sub" id="topbar-sub">Sans accès PC — lecture physique</div>
+      </div>
+      <div class="topbar-badge" id="topbar-badge">👁 TERRAIN</div>
+    </div>
+  </div>
+
+  <!-- ══ ACCUEIL ═══════════════════════════════════════════════════ -->
+  <div class="screen active" id="s-home">
+    <div class="content">
+      <div class="ibox gy fade-in">
+        <p><strong>Bienvenue dans l'outil de diagnostic.</strong><br>Ce guide te conduit pas à pas dans la recherche de panne — <strong>même sans accès PC</strong> au programme automate.</p>
+      </div>
+      <div class="card fade-in">
+        <div class="card-title">Identification</div>
+        <div class="inp-grp"><div class="inp-lbl">Nom / Prénom</div><input class="inp" id="inp-eleve" type="text" placeholder="Ex: Martin Jean" autocomplete="off"></div>
+        <div class="inp-grp"><div class="inp-lbl">Machine / Système</div><input class="inp" id="inp-sys" type="text" placeholder="Ex: ECOLPAP — Compacteuse" autocomplete="off"></div>
+        <div class="inp-grp" style="margin-bottom:0"><div class="inp-lbl">Symptôme observé</div><input class="inp" id="inp-def" type="text" placeholder="Ex: Vérin tiroir ne rentre pas" autocomplete="off"></div>
+      </div>
+      <button class="btn btn-primary fade-in" onclick="startDiag()">Démarrer le diagnostic →</button>
+      <div class="sec-hdr">Modules disponibles</div>
+      <div class="module-grid fade-in">
+        <div class="module-card" onclick="nav('obs')"><div class="mc-icon">👁️</div><div class="mc-title">Observation API</div><div class="mc-sub">Lecture voyants physiques</div></div>
+        <div class="module-card" onclick="nav('loto')"><div class="mc-icon">🔒</div><div class="mc-title">LOTO</div><div class="mc-sub">Consignation des énergies</div></div>
+        <div class="module-card" onclick="nav('recap')"><div class="mc-icon">📋</div><div class="mc-title">Référence</div><div class="mc-sub">3 types de pannes</div></div>
+        <div class="module-card" onclick="nav('conclusion')"><div class="mc-icon">📝</div><div class="mc-title">Conclusion</div><div class="mc-sub">Rédiger le rapport</div></div>
+      </div>
+      <div class="ibox gy fade-in"><p style="font-size:11px"><strong>Version 3.0</strong> — Fonctionne <strong>hors connexion</strong> · Conforme référentiel BAC Pro MSPC</p></div>
+    </div>
+  </div>
+
+  <!-- ══ OBSERVATION API (sans PC) ════════════════════════════════ -->
+  <div class="screen" id="s-obs">
+    <div class="content">
+
+      <div class="ibox or">
+        <p><strong>Pas d'accès PC ?</strong> Commence par observer l'automate, l'IHM et les voyants physiques. Ces informations suffisent souvent à orienter le diagnostic.</p>
+      </div>
+
+      <!-- ÉTAPE 1 : État général API -->
+      <div class="obs-step active-step" id="obs1">
+        <div class="obs-header">
+          <div class="obs-num">1</div>
+          <div class="obs-body">
+            <h4>État général de l'automate</h4>
+            <p>Observe les voyants sur le boîtier de l'API. Que vois-tu ?</p>
+          </div>
+        </div>
+
+        <div class="api-panel" style="margin-top:12px">
+          <div class="api-panel-title">
+            <span style="font-size:16px">🖥️</span> Voyants façade automate (TSX / S7 / M340...)
+          </div>
+
+          <!-- RUN / STOP -->
+          <div class="api-voyant-row">
+            <div class="led led-off" id="led-run"></div>
+            <div>
+              <div class="api-voyant-label">RUN (vert)</div>
+              <div class="api-voyant-meaning">Programme en cours d'exécution</div>
+            </div>
+            <div class="api-sel">
+              <button class="api-sel-btn" style="border-color: var(--vtm); color: var(--vtm); font-weight: 400;" id="btn-run-on" onclick="setLed('run','on')">Allumé</button>
+              <button class="api-sel-btn" style="border-color: var(--grb); color: var(--grm); font-weight: 400;" id="btn-run-off" onclick="setLed('run','off')">Éteint</button>
+            </div>
+          </div>
+
+          <!-- ERR / STOP -->
+          <div class="api-voyant-row">
+            <div class="led led-off" id="led-err"></div>
+            <div>
+              <div class="api-voyant-label">ERR / STOP (rouge)</div>
+              <div class="api-voyant-meaning">Défaut automate ou programme arrêté</div>
+            </div>
+            <div class="api-sel">
+              <button class="api-sel-btn" style="border-color: var(--rgm); color: var(--rgm); font-weight: 400;" id="btn-err-on" onclick="setLed('err','on')">Allumé</button>
+              <button class="api-sel-btn" style="border-color: var(--grb); color: var(--grm); font-weight: 400;" id="btn-err-off" onclick="setLed('err','off')">Éteint</button>
+            </div>
+          </div>
+
+          <!-- BAT / I/O ERR -->
+          <div class="api-voyant-row">
+            <div class="led led-off" id="led-bat"></div>
+            <div>
+              <div class="api-voyant-label">BAT (orange) / I/O ERR</div>
+              <div class="api-voyant-meaning">Défaut batterie ou défaut carte E/S</div>
+            </div>
+            <div class="api-sel">
+              <button class="api-sel-btn" style="border-color: var(--orm); color: var(--orm); font-weight: 400;" id="btn-bat-on" onclick="setLed('bat','on')">Allumé</button>
+              <button class="api-sel-btn" style="border-color: var(--grb); color: var(--grm); font-weight: 400;" id="btn-bat-off" onclick="setLed('bat','off')">Éteint</button>
+            </div>
+          </div>
+
+          <!-- COM -->
+          <div class="api-voyant-row">
+            <div class="led led-off" id="led-com"></div>
+            <div>
+              <div class="api-voyant-label">COM (vert clignotant)</div>
+              <div class="api-voyant-meaning">Communication bus/réseau active</div>
+            </div>
+            <div class="api-sel">
+              <button class="api-sel-btn" style="border-color: var(--vtm); color: var(--vtm); font-weight: 400;" id="btn-com-on" onclick="setLed('com','on')">Clignote</button>
+              <button class="api-sel-btn" style="border-color: var(--grb); color: var(--grm); font-weight: 400;" id="btn-com-off" onclick="setLed('com','off')">Éteint</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="api-diag-msg" style="margin-top: 8px; display: none;"><div class="ibox vt"><p><strong>✓ API en RUN.</strong>
+ Le programme tourne normalement. La panne est d'origine électrique, 
+pneumatique, mécanique ou capteur — pas un défaut API. Continuer 
+l'observation.</p></div></div>
+
+        <div class="obs-actions">
+          <button class="obs-btn obs-btn-bl" onclick="goObs2()">Continuer → Observer les cartes E/S</button>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 2 : LED cartes E/S -->
+      <div class="obs-step" id="obs2" style="display: none;">
+        <div class="obs-header">
+          <div class="obs-num">2</div>
+          <div class="obs-body">
+            <h4>Voyants des cartes Entrées / Sorties</h4>
+            <p>Observe les LED sur les cartes d'entrées et de sorties de l'automate.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="ibox vi" style="margin-bottom:10px">
+            <p><strong>Comment lire les cartes :</strong><br>
+            Chaque LED correspond à une voie (I0.0 → I0.15 pour les entrées, Q0.0 → Q0.15 pour les sorties).<br>
+            <strong>LED allumée</strong> = voie active (1) &nbsp;|&nbsp; <strong>LED éteinte</strong> = voie inactive (0)</p>
+          </div>
+
+          <div class="card" style="margin-bottom:10px">
+            <div class="card-title" style="color:var(--blm)">Cartes SORTIES (Q / O)</div>
+            <p style="font-size:var(--fsm);margin-bottom:10px;color:var(--grd)">La LED de la sortie commandant l'actionneur concerné est-elle <strong>allumée</strong> ?</p>
+            <div class="obs-actions">
+              <button class="obs-btn obs-btn-vt" onclick="setSortie(true)">✓ OUI — LED allumée (sortie active)</button>
+              <button class="obs-btn obs-btn-rg" onclick="setSortie(false)">✗ NON — LED éteinte (sortie inactive)</button>
+            </div>
+            <div id="sortie-conseil" style="margin-top: 10px; display: none;"><div class="ibox ja"><p><strong>Sortie inactive (LED éteinte).</strong>
+ L'automate ne commande pas. La panne est soit dans la chaîne 
+d'acquisition (TYPE 2) soit dans les sécurités (TYPE 3). Continue 
+l'observation des entrées.</p></div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="color:var(--orm)">Cartes ENTRÉES (I)</div>
+            <p style="font-size:var(--fsm);margin-bottom:10px;color:var(--grd)">Les LED des capteurs liés au sous-système en panne — leur état est-il cohérent avec la position réelle ?</p>
+            <div style="display:grid;gap:6px">
+              <div class="obs-btn obs-btn-vt" onclick="setEntrees('coherent')" style="cursor:pointer">✓ OUI — LED cohérentes avec les positions</div>
+              <div class="obs-btn obs-btn-rg" onclick="setEntrees('incoherent')" style="cursor:pointer">✗ NON — une LED est incohérente (capteur?)</div>
+              <div class="obs-btn obs-btn-or" onclick="setEntrees('secu')" style="cursor:pointer">⚠ Entrée de sécurité éteinte (AU, porte...)</div>
+            </div>
+            <div id="entrees-conseil" style="margin-top: 10px; display: none;"><div class="ibox rg"><p><strong>⚠ Entrée de sécurité éteinte.</strong> Un AU, une porte, un pressostat ou un thermique n'est pas satisfait → <strong>TYPE 3 probable</strong> (chaîne sécurité / démarrage).</p></div></div>
+          </div>
+        </div>
+
+        <div class="obs-actions" style="margin-top:4px">
+          <button class="obs-btn obs-btn-bl" onclick="goObs3()">Continuer → Consulter l'IHM</button>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 3 : IHM / Pupitre -->
+      <div class="obs-step" id="obs3" style="display: none;">
+        <div class="obs-header">
+          <div class="obs-num">3</div>
+          <div class="obs-body">
+            <h4>Consultation de l'IHM / Pupitre</h4>
+            <p>Si un écran tactile ou un pupitre est présent, consulte les informations affichées.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <p style="font-size:var(--fsm);color:var(--grd);margin-bottom:10px">Quel type d'information vois-tu sur l'IHM ?</p>
+
+          <div id="ihm-msgs">
+            <div class="ihm-msg-row" id="ihm-aucune" onclick="selIHM('aucune')">
+              <div class="ihm-dot" style="background:var(--grm)"></div>
+              <div class="ihm-msg-txt"><strong>Pas d'IHM</strong> ou écran éteint</div>
+              <div class="ihm-msg-type" style="color:var(--grm)">—</div>
+            </div>
+            <div class="ihm-msg-row" id="ihm-normal" onclick="selIHM('normal')">
+              <div class="ihm-dot" style="background:var(--vtm)"></div>
+              <div class="ihm-msg-txt"><strong>Affichage normal</strong> — mode AUTO / MANU affiché, pas d'alarme</div>
+              <div class="ihm-msg-type" style="color:var(--vtm)">OK</div>
+            </div>
+            <div class="ihm-msg-row" id="ihm-alarme" onclick="selIHM('alarme')">
+              <div class="ihm-dot" style="background:var(--rgm)"></div>
+              <div class="ihm-msg-txt"><strong>Message d'alarme / défaut</strong> — texte d'erreur affiché (ex: "Défaut vérin X", "AU actionné")</div>
+              <div class="ihm-msg-type" style="color:var(--rgm)">ALARME</div>
+            </div>
+            <div class="ihm-msg-row" id="ihm-mode" onclick="selIHM('mode')">
+              <div class="ihm-dot" style="background:var(--jam)"></div>
+              <div class="ihm-msg-txt"><strong>Mode incorrect</strong> — sélecteur MANU au lieu de AUTO, ou mode réglage actif</div>
+              <div class="ihm-msg-type" style="color:var(--jam)">MODE</div>
+            </div>
+            <div class="ihm-msg-row" id="ihm-init" onclick="selIHM('init')">
+              <div class="ihm-dot" style="background:var(--vim)"></div>
+              <div class="ihm-msg-txt"><strong>Demande d'initialisation</strong> — "Mettre en position initiale", "Réarmer", "Attendre init."</div>
+              <div class="ihm-msg-type" style="color:var(--vim)">INIT</div>
+            </div>
+            <div class="ihm-msg-row" id="ihm-secu" onclick="selIHM('secu')">
+              <div class="ihm-dot" style="background:var(--orm)"></div>
+              <div class="ihm-msg-txt"><strong>Défaut sécurité</strong> — "Porte ouverte", "AU enfoncé", "Pressostat", "Thermique déclenché"</div>
+              <div class="ihm-msg-type" style="color:var(--orm)">SÉCU</div>
+            </div>
+          </div>
+
+          <div id="ihm-conseil" style="margin-top: 10px; display: none;"><div class="ibox rg"><p><strong>⚠ Message d'alarme.</strong>
+ Note le texte exact — c'est l'information la plus précieuse pour 
+orienter le diagnostic. Le message indique souvent directement le 
+composant ou la zone en défaut.</p></div></div>
+
+          <div class="inp-grp" style="margin-top:12px">
+            <div class="inp-lbl">Message IHM exact (si lisible)</div>
+            <input class="inp" id="ihm-txt" type="text" placeholder="Note le message affiché..." autocomplete="off" value="AU porte defaillant">
+          </div>
+        </div>
+
+        <div class="obs-actions">
+          <button class="obs-btn obs-btn-bl" onclick="goSynthese()">Voir la synthèse et le type de panne →</button>
+        </div>
+      </div>
+
+      <!-- ÉTAPE 4 : Synthèse -->
+      <div class="obs-step" id="obs4" style="display: none;">
+        <div class="obs-header">
+          <div class="obs-num">4</div>
+          <div class="obs-body">
+            <h4>Synthèse et orientation</h4>
+            <p>En fonction de tes observations, voici le diagnostic préliminaire.</p>
+          </div>
+        </div>
+        <div id="synthese-content" style="margin-top:12px"><div class="ibox vt" style="margin-bottom:6px;padding:8px 12px"><p style="font-size:13px">API en RUN — programme en cours d'exécution</p></div><div class="ibox ja" style="margin-bottom:6px;padding:8px 12px"><p style="font-size:13px">LED sortie éteinte → automate ne commande pas (TYPE 2 ou 3)</p></div><div class="ibox rg" style="margin-bottom:6px;padding:8px 12px"><p style="font-size:13px">Entrée sécurité inactive (TYPE 3 — sécurité/démarrage)</p></div><div class="ibox vt" style="margin-top:10px"><p><strong>Orientation : TYPE 3 — SÉCURITÉ / DÉMARRAGE</strong><br>Passe aux tests correspondants ou affine avec le logiciel automate si disponible.</p></div></div>
+        <div class="obs-actions">
+          <button class="obs-btn obs-btn-vt" onclick="goTestsFromObs()">Aller aux tests correspondants →</button>
+          <button class="obs-btn obs-btn-bl" onclick="nav('arbre')">Affiner avec le logiciel automate →</button>
+          <button class="obs-btn obs-btn-gy" onclick="resetObs()">Recommencer l'observation</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ ARBRE LOGICIEL (avec accès PC) ═══════════════════════════ -->
+  <div class="screen" id="s-arbre">
+    <div class="content">
+      <div class="ibox bl">
+        <p><strong>Accès logiciel disponible.</strong> Ouvre la table d'animation du logiciel automate (PL7 / TIA Portal / Unity Pro) et réponds aux questions.</p>
+      </div>
+      <div class="ibox or">
+        <p>💡 Si tu n'as pas accès au logiciel, utilise <strong>l'Observation API</strong> à la place (voyants physiques + IHM).</p>
+      </div>
+
+      <div class="q-card q1" id="q1" style="display: none;">
+        <div class="q-step bl"><div class="q-step-dot"></div>Question 1 / 3 — Table d'animation</div>
+        <div class="q-title">La SORTIE automate est-elle à 1 ?</div>
+        <div class="q-sub">Table d'animation → colonne Sorties (Q / O) → la sortie commandant l'actionneur</div>
+        <div class="q-hint">💡 Ex ECOLPAP : O1,0 = SOVT. Vérifie aussi la LED correspondante sur le module de sortie physique.</div>
+        <div class="ans-row">
+          <button class="ans-btn ans-yes" onclick="ansQ(1,true)">✓ OUI — = 1</button>
+          <button class="ans-btn ans-no" onclick="ansQ(1,false)">✗ NON — = 0</button>
+        </div>
+      </div>
+      <div class="q-card q2" id="q2" style="display: none;">
+        <div class="q-step ja"><div class="q-step-dot"></div>Question 2 / 3 — Grafcet</div>
+        <div class="q-title">Le Grafcet attend-il un capteur ?</div>
+        <div class="q-sub">Animation Grafcet → étape active → attend une entrée I = 0 ?</div>
+        <div class="q-hint">💡 Regarde aussi les LED des cartes 
+d'entrées. Si une LED est éteinte alors que le capteur devrait être 
+actif → panne acquisition.</div>
+        <div class="ans-row">
+          <button class="ans-btn ans-yes" onclick="ansQ(2,true)">✓ OUI — attend capteur</button>
+          <button class="ans-btn ans-no" onclick="ansQ(2,false)">✗ NON — étape X0</button>
+        </div>
+      </div>
+      <div class="q-card q3" id="q3">
+        <div class="q-step vt"><div class="q-step-dot"></div>Question 3 / 3 — Sécurités</div>
+        <div class="q-title">Une entrée de sécurité est-elle à 0 ?</div>
+        <div class="q-sub">Table d'animation + cartes entrées + IHM :<br>AU · Sélecteur · REAR · Positions initiales · Pressostat · Thermique · T° four</div>
+        <div class="q-hint">💡 L'IHM affiche souvent directement le défaut de sécurité (ex: "AU enfoncé", "Porte ouverte").</div>
+        <div class="ans-row">
+          <button class="ans-btn ans-yes" onclick="ansQ(3,true)">✓ OUI — entrée à 0</button>
+          <button class="ans-btn ans-no" onclick="ansQ(3,false)">✗ Incertain</button>
+        </div>
+      </div>
+      <div id="q-result" class="fade-in">
+        <div class="ibox vt" id="q-result-box"><p id="q-result-msg">TYPE 3 — une condition de sécurité ou d'initialisation n'est pas satisfaite. Vérifier chaque élément de sécurité.</p></div>
+        <button class="btn btn-success" onclick="goTests()">Aller aux tests →</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetArbre()">Recommencer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TESTS ═════════════════════════════════════════════════════ -->
+  <div class="screen" id="s-tests">
+    <div class="content">
+      <div class="prog-wrap">
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="prog-lbl" id="prog-lbl">0 / 8 tests effectués (0%)</div>
+      </div>
+      <div id="tests-list"><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 1/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(0,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(0,'nok')">NOK</button></div></div><div class="test-pt">Arrêts d'urgence (AU)</div><div class="test-desc">Vérifier chaque AU visuellement (déverrouillé ?) + LED entrée AU sur carte API + message IHM</div><div class="test-tags"><span class="tag tag-tool">Visuel + Multimètre</span><span class="tag tag-ok">Tous relâchés — I AU = 1</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 2/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(1,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(1,'nok')">NOK</button></div></div><div class="test-pt">Sélecteur de mode</div><div class="test-desc">Vérifier position sélecteur (Manu/0/Auto) sur pupitre + confirmation IHM</div><div class="test-tags"><span class="tag tag-tool">Visuel pupitre</span><span class="tag tag-ok">Sélecteur sur AUTO</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 3/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(2,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(2,'nok')">NOK</button></div></div><div class="test-pt">Réarmement (REAR)</div><div class="test-desc">Appuyer sur REAR — observer LED entrée REAR sur carte API</div><div class="test-tags"><span class="tag tag-tool">Visuel carte API</span><span class="tag tag-ok">LED REAR s'allume</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 4/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(3,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(3,'nok')">NOK</button></div></div><div class="test-pt">Positions initiales des actionneurs</div><div class="test-desc">Vérifier visuellement chaque actionneur en position initiale + LED capteurs sur carte entrées</div><div class="test-tags"><span class="tag tag-tool">Visuel + carte entrées</span><span class="tag tag-ok">Toutes LED pos. init allumées</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 5/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(4,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(4,'nok')">NOK</button></div></div><div class="test-pt">Sécurités périmètre (portes, capots)</div><div class="test-desc">Vérifier fermeture physique + LED entrées sécurité sur carte + message IHM éventuel</div><div class="test-tags"><span class="tag tag-tool">Visuel + carte entrées</span><span class="tag tag-ok">Contacts fermés — LED allumées</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 6/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(5,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(5,'nok')">NOK</button></div></div><div class="test-pt">Pressostat et relais thermiques</div><div class="test-desc">Vérifier voyants relais thermiques (déclenché = rouge) + LED entrée pressostat sur carte</div><div class="test-tags"><span class="tag tag-tool">Visuel carte API</span><span class="tag tag-ok">LED pressostat allumée</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 7/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(6,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(6,'nok')">NOK</button></div></div><div class="test-pt">Température (four / huile)</div><div class="test-desc">Vérifier afficheur thermique sur machine ou IHM — consigne atteinte ?</div><div class="test-tags"><span class="tag tag-tool">Afficheur IHM / machine</span><span class="tag tag-ok">T° consigne atteinte</span></div></div><div class="test-item"><div class="test-header"><span class="test-n" style="color:var(--vtm)">Test 8/8</span><div class="test-checks"><button class="chk chk-ok" onclick="setRes(7,'ok')">OK</button><button class="chk chk-nok" onclick="setRes(7,'nok')">NOK</button></div></div><div class="test-pt">Étape initiale Grafcet (si accès)</div><div class="test-desc">Si accès logiciel disponible : vérifier que X0 = 1 dans l'animation</div><div class="test-tags"><span class="tag tag-tool">PC + logiciel (si dispo)</span><span class="tag tag-ok">X0 = 1</span></div></div></div>
+      <div id="test-panne" style="display:none" class="fade-in">
+        <div class="result-card found">
+          <div class="result-title rg">⚠ Panne localisée !</div>
+          <div class="result-desc" id="test-panne-desc"></div>
+        </div>
+        <button class="btn btn-primary" onclick="nav('conclusion')">Rédiger la conclusion →</button>
+        <button class="btn btn-ghost btn-sm" onclick="nav('loto')">Procédure LOTO →</button>
+      </div>
+      <div id="test-allok" style="display:none" class="fade-in">
+        <div class="result-card done">
+          <div class="result-title vt">✓ Tous les tests sont OK</div>
+          <div class="result-desc">Aucune panne sur cette chaîne. Retourne à l'observation ou change de type.</div>
+        </div>
+        <button class="btn btn-ghost" onclick="nav('obs')">Retour observation</button>
+        <button class="btn btn-ghost btn-sm" onclick="nav('arbre')">Affiner avec logiciel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONCLUSION ════════════════════════════════════════════════ -->
+  <div class="screen" id="s-conclusion">
+    <div class="content">
+      <div id="conclusion-report" class="card" style="display:none;">
+        <div class="card-title">Compte rendu d'intervention</div>
+        <div style="margin-bottom:10px;font-size:13px;line-height:1.4">
+          <strong>Intervenant :</strong> <span id="print-intervenant">Non renseigné</span><br>
+          <strong>Machine / Système :</strong> <span id="print-machine">Non renseigné</span><br>
+          <strong>Symptôme observé :</strong> <span id="print-symptome">Non renseigné</span>
+        </div>
+        <div style="margin-bottom:10px;font-size:13px;line-height:1.4">
+          <strong>Type de panne :</strong> <span id="print-type">Non renseigné</span><br>
+          <strong>Observé sur :</strong> <span id="print-observe">Non renseigné</span><br>
+          <strong>Composant défaillant :</strong> <span id="print-composant">Non renseigné</span><br>
+          <strong>Nature du défaut :</strong> <span id="print-nature">Non renseigné</span>
+        </div>
+        <div style="margin-bottom:10px;font-size:13px;line-height:1.4">
+          <strong>Action corrective :</strong><br>
+          <span id="print-action">Non renseigné</span>
+        </div>
+        <div style="margin-bottom:10px;font-size:13px;line-height:1.4">
+          <strong>Vérifications effectuées :</strong><br>
+          <span id="print-verifs">Non renseigné</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Type de panne identifié</div>
+        <div class="type-sel-row">
+          <button class="type-sel-btn tsb-1" onclick="selType(this,1)" id="tsb1">TYPE 1<br><span style="font-weight:400;font-size:10px">Action</span></button>
+          <button class="type-sel-btn tsb-2" onclick="selType(this,2)" id="tsb2">TYPE 2<br><span style="font-weight:400;font-size:10px">Acquisition</span></button>
+          <button class="type-sel-btn tsb-3" onclick="selType(this,3)" id="tsb3">TYPE 3<br><span style="font-weight:400;font-size:10px">Sécurité</span></button>
+        </div>
+        <div class="inp-grp"><div class="inp-lbl">Observé sur (API / IHM / voyant)</div><input class="inp" id="c-obs" type="text" placeholder="Ex: LED Q0.7 allumée, IHM affiche Défaut vérin" autocomplete="off"></div>
+        <div class="inp-grp"><div class="inp-lbl">Composant défaillant / Repère</div><input class="inp" id="c-comp" type="text" placeholder="Ex: Bobine Y30 / EV 3YV12.0" autocomplete="off"></div>
+        <div class="inp-grp" style="margin-bottom:0"><div class="inp-lbl">Nature du défaut</div><input class="inp" id="c-nat" type="text" placeholder="Ex: Bobine grillée, capteur déréglé..." autocomplete="off"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Action corrective réalisée</div>
+        <textarea class="inp" id="c-action" placeholder="Décris l'intervention réalisée..."></textarea>
+      </div>
+      <div class="card">
+        <div class="card-title">Vérifications avant remise en service</div>
+        <div id="verif-list"><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Cycle automatique complet sans défaut</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Capteurs cohérents avec les positions réelles</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Aucune fuite / surchauffe / bruit anormal</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Sécurités et AU testés et fonctionnels</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Rapport d'intervention rédigé</span></div></div>
+      </div>
+      <button class="btn btn-primary" onclick="updateConclusionReport();window.print()">🖨️ Imprimer le compte rendu</button>
+      <button class="btn btn-warn" onclick="nav('loto')">🔒 Procédure LOTO →</button>
+      <button class="btn btn-ghost btn-sm" onclick="nav('home')">Terminer</button>
+    </div>
+  </div>
+
+  <!-- ══ LOTO ══════════════════════════════════════════════════════ -->
+  <div class="screen" id="s-loto">
+    <div class="content">
+      <div class="ibox rg"><p><strong>DANGER — OBLIGATOIRE</strong><br>Aucune intervention sans consignation complète. Code du travail Art. R4323-52.</p></div>
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:var(--rgc);border-radius:var(--rs);padding:10px;text-align:center">
+            <div style="font-size:24px">🔒</div>
+            <div style="font-size:13px;font-weight:700;color:var(--rgm);margin-top:4px">LOCK OUT</div>
+            <div style="font-size:11px;color:var(--grm);margin-top:2px">Condamner par cadenas</div>
+          </div>
+          <div style="background:var(--orc);border-radius:var(--rs);padding:10px;text-align:center">
+            <div style="font-size:24px">🏷️</div>
+            <div style="font-size:13px;font-weight:700;color:var(--orm);margin-top:4px">TAG OUT</div>
+            <div style="font-size:11px;color:var(--grm);margin-top:2px">Étiqueter avec son nom</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-hdr">Les 6 étapes obligatoires</div>
+      <div id="loto-steps"><div class="loto-step"><div class="loto-num" style="background:#2563eb">1</div><div class="loto-body"><h4>1. Identifier</h4><p>Lister toutes les sources : électrique, pneumatique, hydraulique, mécanique, thermique</p></div></div><div class="loto-step"><div class="loto-num" style="background:#7c3aed">2</div><div class="loto-body"><h4>2. Informer</h4><p>Prévenir l'opérateur, responsable prod., signaler visuellement la zone</p></div></div><div class="loto-step"><div class="loto-num" style="background:#d97706">3</div><div class="loto-body"><h4>3. Couper</h4><p>Ouvrir disjoncteur général, fermer vanne air, arrêter pompe hydraulique, attendre arrêt complet</p></div></div><div class="loto-step"><div class="loto-num" style="background:#dc2626">4</div><div class="loto-body"><h4>4. Condamner</h4><p>Cadenas personnel sur chaque point de coupure — personne d'autre ne peut le retirer</p></div></div><div class="loto-step"><div class="loto-num" style="background:#ea580c">5</div><div class="loto-body"><h4>5. Étiqueter</h4><p>Pancarte avec : nom, prénom, date, heure, nature de l'intervention</p></div></div><div class="loto-step"><div class="loto-num" style="background:#16a34a">6</div><div class="loto-body"><h4>6. Vérifier</h4><p>Bouton marche → rien ne démarre · Mesurer 0V · Purger circuit pneumatique</p></div></div></div>
+      <div class="sec-hdr">Tableau de consignation</div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center;margin-bottom:8px;padding:0 2px">
+          <span style="font-size:11px;color:var(--grm);font-weight:600">Source d'énergie</span>
+          <div style="display:flex;gap:5px;font-size:10px;font-weight:700;color:var(--grm)">
+            <span style="width:30px;text-align:center">🔒</span>
+            <span style="width:30px;text-align:center">🏷️</span>
+            <span style="width:30px;text-align:center">✓0</span>
+          </div>
+        </div>
+        <div id="energy-table"><div class="energy-row"><div class="energy-main"><div class="en">Électrique principal</div><div class="ei">Disjoncteur général armoire Q0</div></div><div class="energy-btns"><div class="mc mc-c" onclick="toggleE(0,'c')">🔒</div><div class="mc mc-e" onclick="toggleE(0,'e')">🏷️</div><div class="mc mc-v" onclick="toggleE(0,'v')">✓</div></div></div><div class="energy-row"><div class="energy-main"><div class="en">Électrique secondaire</div><div class="ei">24V commande / circuits secondaires</div></div><div class="energy-btns"><div class="mc mc-c" onclick="toggleE(1,'c')">🔒</div><div class="mc mc-e" onclick="toggleE(1,'e')">🏷️</div><div class="mc mc-v" onclick="toggleE(1,'v')">✓</div></div></div><div class="energy-row"><div class="energy-main"><div class="en">Pneumatique</div><div class="ei">Vanne arrêt réseau air (1S) + purge</div></div><div class="energy-btns"><div class="mc mc-c" onclick="toggleE(2,'c')">🔒</div><div class="mc mc-e" onclick="toggleE(2,'e')">🏷️</div><div class="mc mc-v" onclick="toggleE(2,'v')">✓</div></div></div><div class="energy-row"><div class="energy-main"><div class="en">Hydraulique</div><div class="ei">Arrêt pompe + vanne circuit</div></div><div class="energy-btns"><div class="mc mc-c" onclick="toggleE(3,'c')">🔒</div><div class="mc mc-e" onclick="toggleE(3,'e')">🏷️</div><div class="mc mc-v" onclick="toggleE(3,'v')">✓</div></div></div><div class="energy-row"><div class="energy-main"><div class="en">Thermique</div><div class="ei">Résistances / four — attendre refroidissement</div></div><div class="energy-btns"><div class="mc mc-c" onclick="toggleE(4,'c')">🔒</div><div class="mc mc-e" onclick="toggleE(4,'e')">🏷️</div><div class="mc mc-v" onclick="toggleE(4,'v')">✓</div></div></div><div class="energy-row"><div class="energy-main"><div class="en">Mécanique</div><div class="ei">Masses en hauteur / ressorts / inerties</div></div><div class="energy-btns"><div class="mc mc-c" onclick="toggleE(5,'c')">🔒</div><div class="mc mc-e" onclick="toggleE(5,'e')">🏷️</div><div class="mc mc-v" onclick="toggleE(5,'v')">✓</div></div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--grm)">🔒 Cadenas &nbsp;|&nbsp; 🏷️ Étiquette &nbsp;|&nbsp; ✓0 Vérifié à zéro</div>
+      </div>
+      <div class="sec-hdr">Déconsignation</div>
+      <div class="ibox vt"><p>Retirer dans l'ordre inverse, uniquement par le technicien ayant consigné.</p></div>
+      <div id="decons-list"><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Outils et matériel retirés de la machine</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Zone dégagée — aucune personne présente</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Cadenas retirés par le technicien ayant consigné</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Étiquettes retirées</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Énergies rétablies dans l'ordre inverse</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Opérateur informé avant remise en marche</span></div><div class="chkrow"><div class="chkbox"></div><span class="chkrow-txt">Test de bon fonctionnement réalisé</span></div></div>
+      <div class="card">
+        <div class="card-title">Visa technicien</div>
+        <div class="inp-grp"><div class="inp-lbl">Nom</div><input class="inp" id="loto-nom" type="text" placeholder="Ton nom" autocomplete="off"></div>
+        <div class="inp-grp" style="margin-bottom:0"><div class="inp-lbl">Heure de déconsignation</div><input class="inp" id="loto-heure" type="time"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="nav('home')">Retour accueil</button>
+    </div>
+  </div>
+
+  <!-- ══ RÉCAP ══════════════════════════════════════════════════════ -->
+  <div class="screen" id="s-recap">
+    <div class="content">
+      <div class="sec-hdr">Lecture rapide — sans logiciel</div>
+      <div class="card">
+        <div class="card-title">Ce que tu peux lire sur l'automate physique</div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <tbody><tr style="background:var(--grc)"><th style="padding:6px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--grm)">Voyant / Source</th><th style="padding:6px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--grm)">Ce qu'il indique</th><th style="padding:6px 8px;text-align:left;font-size:11px;font-weight:700;color:var(--grm)">Piste</th></tr>
+          <tr><td style="padding:6px 8px"><span class="led led-green" style="vertical-align:middle;margin-right:4px"></span>RUN vert</td><td style="padding:6px 8px">Programme en cours</td><td style="padding:6px 8px;color:var(--vtm);font-weight:600">Normal</td></tr>
+          <tr style="background:var(--grc)"><td style="padding:6px 8px"><span class="led led-red led-blink" style="vertical-align:middle;margin-right:4px"></span>ERR rouge</td><td style="padding:6px 8px">Défaut API / arrêt programme</td><td style="padding:6px 8px;color:var(--rgm);font-weight:600">→ Appeler technicien</td></tr>
+          <tr><td style="padding:6px 8px"><span class="led led-orange" style="vertical-align:middle;margin-right:4px"></span>BAT orange</td><td style="padding:6px 8px">Défaut batterie</td><td style="padding:6px 8px;color:var(--orm);font-weight:600">→ Changer batterie</td></tr>
+          <tr style="background:var(--grc)"><td style="padding:6px 8px"><span class="led led-red" style="vertical-align:middle;margin-right:4px"></span>I/O ERR rouge</td><td style="padding:6px 8px">Défaut carte entrée ou sortie</td><td style="padding:6px 8px;color:var(--rgm);font-weight:600">→ Vérifier câblage carte</td></tr>
+          <tr><td style="padding:6px 8px"><span class="led led-green led-blink" style="vertical-align:middle;margin-right:4px"></span>LED sortie allumée</td><td style="padding:6px 8px">Sortie commandée = 1</td><td style="padding:6px 8px;color:var(--blm);font-weight:600">→ TYPE 1 si actionneur inerte</td></tr>
+          <tr style="background:var(--grc)"><td style="padding:6px 8px"><span class="led led-off" style="vertical-align:middle;margin-right:4px"></span>LED sortie éteinte</td><td style="padding:6px 8px">Sortie = 0, pas d'ordre</td><td style="padding:6px 8px;color:var(--jam);font-weight:600">→ TYPE 2 ou TYPE 3</td></tr>
+          <tr><td style="padding:6px 8px">IHM — Message alarme</td><td style="padding:6px 8px">Défaut explicite nommé</td><td style="padding:6px 8px;color:var(--vim);font-weight:600">→ Lire et noter le message</td></tr>
+          <tr style="background:var(--grc)"><td style="padding:6px 8px">IHM — Mode MANU</td><td style="padding:6px 8px">Sélecteur pas en AUTO</td><td style="padding:6px 8px;color:var(--vtm);font-weight:600">→ TYPE 3 (sécurité)</td></tr>
+        </tbody></table>
+      </div>
+      <div class="sec-hdr">Les 3 types de pannes</div>
+      <div id="recap-cards"><div class="recap-card t1"><div class="rc-header"><div class="rc-num" style="background:#2563eb">1</div><div class="rc-name">Chaîne d'action</div></div><div class="rc-crit"><span class="rc-crit-lbl">LED sortie API</span><span class="rc-crit-val">LED sortie allumée (= 1)</span><span class="rc-crit-lbl">Grafcet</span><span class="rc-crit-val">Étape action active</span><span class="rc-crit-lbl">Sécurités</span><span class="rc-crit-val">Toutes OK</span><span class="rc-crit-lbl">Symptôme</span><span class="rc-crit-val">Actionneur ne bouge pas</span></div><div style="margin-top:8px;font-size:10px;color:var(--grm);font-weight:600">Appuyer → aller aux tests</div></div><div class="recap-card t2"><div class="rc-header"><div class="rc-num" style="background:#d97706">2</div><div class="rc-name">Chaîne d'acquisition</div></div><div class="rc-crit"><span class="rc-crit-lbl">LED sortie API</span><span class="rc-crit-val">LED sortie éteinte (= 0)</span><span class="rc-crit-lbl">Grafcet</span><span class="rc-crit-val">Bloquée sur capteur</span><span class="rc-crit-lbl">Sécurités</span><span class="rc-crit-val">Toutes OK</span><span class="rc-crit-lbl">Symptôme</span><span class="rc-crit-val">Actionneur bougé, séquence bloquée</span></div><div style="margin-top:8px;font-size:10px;color:var(--grm);font-weight:600">Appuyer → aller aux tests</div></div><div class="recap-card t3"><div class="rc-header"><div class="rc-num" style="background:#16a34a">3</div><div class="rc-name">Sécurité / Démarrage</div></div><div class="rc-crit"><span class="rc-crit-lbl">LED sortie API</span><span class="rc-crit-val">LED sortie éteinte (= 0)</span><span class="rc-crit-lbl">Grafcet</span><span class="rc-crit-val">X0 active (init.)</span><span class="rc-crit-lbl">Sécurités</span><span class="rc-crit-val">Au moins 1 à 0 !</span><span class="rc-crit-lbl">Symptôme</span><span class="rc-crit-val">Rien ne démarre</span></div><div style="margin-top:8px;font-size:10px;color:var(--grm);font-weight:600">Appuyer → aller aux tests</div></div></div>
+      <div class="sec-hdr">Chaîne fonctionnelle</div>
+      <div class="card" style="padding:12px;overflow-x:auto">
+        <div class="chain">
+          <div class="chain-node" style="background:var(--blp);border-color:var(--blm)"><div class="cn-title" style="color:var(--blm)">PARTIE<br>COMMANDE</div><div class="cn-sub">API / PC</div></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-node" style="background:var(--orc);border-color:var(--orm)"><div class="cn-title" style="color:var(--orm)">PRÉ-<br>ACTION.</div><div class="cn-sub">EV / Contact.</div></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-node" style="background:var(--rgc);border-color:var(--rgm)"><div class="cn-title" style="color:var(--rgm)">ACTION-<br>NEUR</div><div class="cn-sub">Vérin/Moteur</div></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-node" style="background:#f5f3ff;border-color:#7c3aed"><div class="cn-title" style="color:#7c3aed">CAPTEUR<br>RETOUR</div><div class="cn-sub">FdC/Détect.</div></div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="nav('home')">Retour accueil</button>
+    </div>
+  </div>
+
+  <div class="bottomnav">
+    <button class="nav-btn" id="nav-home" onclick="nav('home')"><span class="nav-icon">🏠</span><span class="nav-label">Accueil</span></button>
+    <button class="nav-btn active" id="nav-obs" onclick="nav('obs')"><span class="nav-icon">👁️</span><span class="nav-label">Observation</span></button>
+    <button class="nav-btn" id="nav-loto" onclick="nav('loto')"><span class="nav-icon">🔒</span><span class="nav-label">LOTO</span></button>
+    <button class="nav-btn" id="nav-recap" onclick="nav('recap')"><span class="nav-icon">📋</span><span class="nav-label">Référence</span></button>
+  </div>
+</div>
+
+<script>
+/* ── Data ──────────────────────────────────────────────────────── */
+const TESTS = {
+  t1:{title:'TYPE 1 — Chaîne d\'action',sub:'Sortie active — actionneur ne réagit pas',items:[
+    {pt:'Sortie module automate',desc:'Mesurer la tension en sortie du module (fil/bornier). Croiser avec la LED allumée sur la carte sortie.',tool:'Multimètre VDC',ok:'24 VDC'},
+    {pt:'Câble de commande',desc:'Contrôler la continuité du câble entre armoire et pré-actionneur',tool:'Multimètre Ω',ok:'~0 Ω'},
+    {pt:'Bobine EV / contacteur',desc:'Mesurer la tension aux bornes de la bobine (connecteur DIN 43650)',tool:'Multimètre VDC',ok:'24 VDC (± 10 %)'},
+    {pt:'Résistance bobine (déconnectée)',desc:'Mesurer la résistance — détecter circuit ouvert ou court-circuit',tool:'Multimètre Ω',ok:'Valeur constructeur'},
+    {pt:'Alimentation énergie (pneum./élec.)',desc:'Vérifier pression réseau pneumatique ou tension puissance actionneur',tool:'Manomètre / Multimètre',ok:'Valeur réglage'},
+    {pt:'Commande manuelle distributeur',desc:'Actionner manuellement le bouton test du distributeur — actionneur réagit ?',tool:'Test manuel',ok:'Actionneur se déplace'},
+    {pt:'Actionneur (mécanique)',desc:'Rechercher blocage, corps étranger, joint, tige coincée ou guidage défaillant',tool:'Visuel + main',ok:'Déplacement libre'},
+  ]},
+  t2:{title:'TYPE 2 — Chaîne d\'acquisition',sub:'Actionneur en position — séquence bloquée',items:[
+    {pt:'Position réelle de l\'actionneur',desc:'Vérifier visuellement que l\'actionneur est bien en butée. Croiser avec la LED de l\'entrée capteur sur la carte.',tool:'Visuel',ok:'En butée / position'},
+    {pt:'LED du capteur (physique)',desc:'Observer la LED de signalisation sur le corps du capteur — allumée = détection active',tool:'Visuel',ok:'LED allumée'},
+    {pt:'LED carte entrée API',desc:'Vérifier la LED de l\'entrée I correspondante sur la carte d\'entrée de l\'automate',tool:'Visuel carte API',ok:'LED entrée allumée'},
+    {pt:'Tension sortie capteur (fil signal)',desc:'Mesurer la tension sur le fil de sortie du capteur',tool:'Multimètre VDC',ok:'24V actif / 0V inactif'},
+    {pt:'Alimentation capteur (+24V / 0V)',desc:'Mesurer la tension d\'alimentation du capteur',tool:'Multimètre VDC',ok:'24 VDC'},
+    {pt:'Réglage capteur (distance / axe)',desc:'Vérifier la distance de détection et l\'orientation selon la notice constructeur',tool:'Réglet / visuel',ok:'Selon notice'},
+    {pt:'Câble capteur → bornier → API',desc:'Contrôler la continuité du câble signal entre capteur et entrée automate',tool:'Multimètre Ω',ok:'~0 Ω'},
+  ]},
+  t3:{title:'TYPE 3 — Sécurité / Démarrage',sub:'Cycle ne démarre pas — condition non satisfaite',items:[
+    {pt:'Arrêts d\'urgence (AU)',desc:'Vérifier chaque AU visuellement (déverrouillé ?) + LED entrée AU sur carte API + message IHM',tool:'Visuel + Multimètre',ok:'Tous relâchés — I AU = 1'},
+    {pt:'Sélecteur de mode',desc:'Vérifier position sélecteur (Manu/0/Auto) sur pupitre + confirmation IHM',tool:'Visuel pupitre',ok:'Sélecteur sur AUTO'},
+    {pt:'Réarmement (REAR)',desc:'Appuyer sur REAR — observer LED entrée REAR sur carte API',tool:'Visuel carte API',ok:'LED REAR s\'allume'},
+    {pt:'Positions initiales des actionneurs',desc:'Vérifier visuellement chaque actionneur en position initiale + LED capteurs sur carte entrées',tool:'Visuel + carte entrées',ok:'Toutes LED pos. init allumées'},
+    {pt:'Sécurités périmètre (portes, capots)',desc:'Vérifier fermeture physique + LED entrées sécurité sur carte + message IHM éventuel',tool:'Visuel + carte entrées',ok:'Contacts fermés — LED allumées'},
+    {pt:'Pressostat et relais thermiques',desc:'Vérifier voyants relais thermiques (déclenché = rouge) + LED entrée pressostat sur carte',tool:'Visuel carte API',ok:'LED pressostat allumée'},
+    {pt:'Température (four / huile)',desc:'Vérifier afficheur thermique sur machine ou IHM — consigne atteinte ?',tool:'Afficheur IHM / machine',ok:'T° consigne atteinte'},
+    {pt:'Étape initiale Grafcet (si accès)',desc:'Si accès logiciel disponible : vérifier que X0 = 1 dans l\'animation',tool:'PC + logiciel (si dispo)',ok:'X0 = 1'},
+  ]}
+};
+
+const LOTO_STEPS=[
+  {n:1,col:'#2563eb',title:'1. Identifier',desc:'Lister toutes les sources : électrique, pneumatique, hydraulique, mécanique, thermique'},
+  {n:2,col:'#7c3aed',title:'2. Informer',desc:'Prévenir l\'opérateur, responsable prod., signaler visuellement la zone'},
+  {n:3,col:'#d97706',title:'3. Couper',desc:'Ouvrir disjoncteur général, fermer vanne air, arrêter pompe hydraulique, attendre arrêt complet'},
+  {n:4,col:'#dc2626',title:'4. Condamner',desc:'Cadenas personnel sur chaque point de coupure — personne d\'autre ne peut le retirer'},
+  {n:5,col:'#ea580c',title:'5. Étiqueter',desc:'Pancarte avec : nom, prénom, date, heure, nature de l\'intervention'},
+  {n:6,col:'#16a34a',title:'6. Vérifier',desc:'Bouton marche → rien ne démarre · Mesurer 0V · Purger circuit pneumatique'},
+];
+
+const ENERGIES=[
+  {name:'Électrique principal',info:'Disjoncteur général armoire Q0'},
+  {name:'Électrique secondaire',info:'24V commande / circuits secondaires'},
+  {name:'Pneumatique',info:'Vanne arrêt réseau air (1S) + purge'},
+  {name:'Hydraulique',info:'Arrêt pompe + vanne circuit'},
+  {name:'Thermique',info:'Résistances / four — attendre refroidissement'},
+  {name:'Mécanique',info:'Masses en hauteur / ressorts / inerties'},
+];
+
+const VERIF=['Cycle automatique complet sans défaut','Capteurs cohérents avec les positions réelles','Aucune fuite / surchauffe / bruit anormal','Sécurités et AU testés et fonctionnels','Rapport d\'intervention rédigé'];
+const DECONS=['Outils et matériel retirés de la machine','Zone dégagée — aucune personne présente','Cadenas retirés par le technicien ayant consigné','Étiquettes retirées','Énergies rétablies dans l\'ordre inverse','Opérateur informé avant remise en marche','Test de bon fonctionnement réalisé'];
+const RECAP=[
+  {n:1,cls:'t1',nc:'#2563eb',name:'Chaîne d\'action',crit:'LED sortie allumée (= 1)',graf:'Étape action active',secu:'Toutes OK',symp:'Actionneur ne bouge pas'},
+  {n:2,cls:'t2',nc:'#d97706',name:'Chaîne d\'acquisition',crit:'LED sortie éteinte (= 0)',graf:'Bloquée sur capteur',secu:'Toutes OK',symp:'Actionneur bougé, séquence bloquée'},
+  {n:3,cls:'t3',nc:'#16a34a',name:'Sécurité / Démarrage',crit:'LED sortie éteinte (= 0)',graf:'X0 active (init.)',secu:'Au moins 1 à 0 !',symp:'Rien ne démarre'},
+];
+
+/* ── State ─────────────────────────────────────────────────────── */
+let S={type:null,tests:{},energy:{},verif:{},decons:{},leds:{},sortie:null,entrees:null,ihm:null};
+
+/* ── Nav ───────────────────────────────────────────────────────── */
+function nav(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  const nb=document.getElementById('nav-'+id);
+  if(nb) nb.classList.add('active');
+  const el=document.querySelector('#s-'+id+' .content');
+  if(el) el.scrollTop=0;
+  const tmap={home:'Diagnostic MSPC',obs:'Observation API / IHM',arbre:'Arbre — avec logiciel',tests:S.type?TESTS[S.type].title:'Tests',conclusion:'Conclusion',loto:'Consignation LOTO',recap:'Référence'};
+  const smap={home:'BAC Pro — Guide de recherche de panne',obs:'Sans accès PC — lecture physique',arbre:'Avec accès logiciel automate',tests:S.type?TESTS[S.type].sub:'',conclusion:'Résumé du diagnostic',loto:'Lock Out / Tag Out — Obligatoire',recap:'3 types de pannes + lecture API physique'};
+  document.getElementById('topbar-title').textContent=tmap[id]||id;
+  document.getElementById('topbar-sub').textContent=smap[id]||'';
+  document.getElementById('topbar-badge').textContent={loto:'⚠ SÉCU',obs:'👁 TERRAIN',arbre:'💻 LOGICIEL',recap:'REF'}[id]||'MSPC';
+  if(id==='tests') renderTests();
+  if(id==='loto') renderLoto();
+  if(id==='recap') renderRecap();
+  if(id==='conclusion') renderConclusion();
+}
+
+function startDiag(){S={type:null,tests:{},energy:{},verif:{},decons:{},leds:{},sortie:null,entrees:null,ihm:null};resetObs();nav('obs');}
+
+/* ── Observation API ───────────────────────────────────────────── */
+const LED_STYLES={run:{on:'led-green',off:'led-off'},err:{on:'led-red led-blink',off:'led-off'},bat:{on:'led-orange',off:'led-off'},com:{on:'led-green led-blink',off:'led-off'}};
+
+function setLed(led,state){
+  S.leds[led]=state;
+  const el=document.getElementById('led-'+led);
+  el.className='led '+(state==='on'?LED_STYLES[led].on:LED_STYLES[led].off);
+  const onBtn=document.getElementById('btn-'+led+'-on');
+  const offBtn=document.getElementById('btn-'+led+'-off');
+  if(onBtn) onBtn.style.fontWeight=state==='on'?'800':'400';
+  if(offBtn) offBtn.style.fontWeight=state==='off'?'800':'400';
+  checkApiDiag();
+}
+
+function checkApiDiag(){
+  const msg=document.getElementById('api-diag-msg');
+  const l=S.leds;
+  let html='';
+  if(l.err==='on'){
+    html='<div class="ibox rg"><p><strong>⚠ API en ERREUR ou STOP.</strong> Le programme ne tourne pas. Vérifier le code d\'erreur sur l\'afficheur de l\'API. Ce n\'est pas une panne de cycle classique — contacter le responsable technique.</p></div>';
+  } else if(l.bat==='on'){
+    html='<div class="ibox or"><p><strong>⚠ Défaut batterie ou défaut carte E/S.</strong> La batterie doit être remplacée. Si c\'est un défaut E/S, une carte entrée ou sortie est en défaut — vérifier le câblage de la carte signalée.</p></div>';
+  } else if(l.run==='on'){
+    html='<div class="ibox vt"><p><strong>✓ API en RUN.</strong> Le programme tourne normalement. La panne est d\'origine électrique, pneumatique, mécanique ou capteur — pas un défaut API. Continuer l\'observation.</p></div>';
+  }
+  if(html){msg.style.display='';msg.innerHTML=html;}
+  else{msg.style.display='none';}
+}
+
+function goObs2(){
+  document.getElementById('obs2').style.display='';
+  document.getElementById('obs2').scrollIntoView({behavior:'smooth'});
+}
+
+function setSortie(yes){
+  S.sortie=yes;
+  const c=document.getElementById('sortie-conseil');
+  if(yes){
+    S.type='t1';
+    c.style.display='';
+    c.innerHTML='<div class="ibox vt"><p><strong>✓ Sortie active (LED allumée).</strong> L\'automate commande bien. Si l\'actionneur ne bouge pas → <strong>TYPE 1 probable</strong> (chaîne d\'action : câble, bobine, distributeur, vérin...).</p></div>';
+  } else {
+    c.style.display='';
+    c.innerHTML='<div class="ibox ja"><p><strong>Sortie inactive (LED éteinte).</strong> L\'automate ne commande pas. La panne est soit dans la chaîne d\'acquisition (TYPE 2) soit dans les sécurités (TYPE 3). Continue l\'observation des entrées.</p></div>';
+  }
+}
+
+function setEntrees(val){
+  S.entrees=val;
+  document.querySelectorAll('#ihm-msgs .ihm-msg-row').forEach(r=>r.classList.remove('sel'));
+  const c=document.getElementById('entrees-conseil');
+  c.style.display='';
+  const msgs={
+    coherent:'<div class="ibox vt"><p><strong>✓ Entrées cohérentes.</strong> Les capteurs transmettent correctement. Si la sortie est active et l\'actionneur inerte → TYPE 1. Si la sortie est inactive → regarder les sécurités (TYPE 3).</p></div>',
+    incoherent:'<div class="ibox ja"><p><strong>⚠ Entrée incohérente.</strong> Une LED d\'entrée ne correspond pas à la position réelle → <strong>TYPE 2 probable</strong> (chaîne d\'acquisition : capteur, câble, alimentation capteur...).</p></div>',
+    secu:'<div class="ibox rg"><p><strong>⚠ Entrée de sécurité éteinte.</strong> Un AU, une porte, un pressostat ou un thermique n\'est pas satisfait → <strong>TYPE 3 probable</strong> (chaîne sécurité / démarrage).</p></div>'
+  };
+  if(val==='incoherent') S.type='t2';
+  if(val==='secu') S.type='t3';
+  c.innerHTML=msgs[val]||'';
+}
+
+function goObs3(){
+  document.getElementById('obs3').style.display='';
+  document.getElementById('obs3').scrollIntoView({behavior:'smooth'});
+}
+
+const IHM_CONSEILS={
+  aucune:'<div class="ibox gy"><p>Pas d\'IHM. Baser le diagnostic uniquement sur les voyants API et les observations terrain.</p></div>',
+  normal:'<div class="ibox vt"><p><strong>IHM normale.</strong> Pas de défaut signalé. Continuer l\'observation physique des cartes E/S.</p></div>',
+  alarme:'<div class="ibox rg"><p><strong>⚠ Message d\'alarme.</strong> Note le texte exact — c\'est l\'information la plus précieuse pour orienter le diagnostic. Le message indique souvent directement le composant ou la zone en défaut.</p></div>',
+  mode:'<div class="ibox ja"><p><strong>Mode incorrect.</strong> Remettre le sélecteur en AUTO et appuyer sur REAR (Réarmement). → TYPE 3 (sécurité / démarrage).</p></div>',
+  init:'<div class="ibox vi"><p><strong>Demande d\'initialisation.</strong> Remettre tous les actionneurs en position initiale, puis appuyer sur REAR. → TYPE 3 (sécurité / démarrage).</p></div>',
+  secu:'<div class="ibox or"><p><strong>Défaut sécurité signalé.</strong> Identifier l\'élément en défaut (AU, porte, pressostat, thermique) et l\'acquitter après correction. → TYPE 3 (sécurité / démarrage).</p></div>',
+};
+
+function selIHM(val){
+  S.ihm=val;
+  document.querySelectorAll('.ihm-msg-row').forEach(r=>r.classList.remove('sel'));
+  document.getElementById('ihm-'+val).classList.add('sel');
+  const c=document.getElementById('ihm-conseil');
+  c.style.display='';
+  c.innerHTML=IHM_CONSEILS[val]||'';
+  if(['mode','init','secu'].includes(val)) S.type='t3';
+  if(val==='alarme' && !S.type) S.type='t1';
+}
+
+function goSynthese(){
+  document.getElementById('obs4').style.display='';
+  document.getElementById('obs4').scrollIntoView({behavior:'smooth'});
+  const d=document.getElementById('synthese-content');
+  let lines=[];
+  const leds=S.leds;
+  if(leds.run==='on') lines.push({c:'vt',t:'API en RUN — programme en cours d\'exécution'});
+  if(leds.err==='on') lines.push({c:'rg',t:'API en ERREUR — programme arrêté, panne critique'});
+  if(leds.bat==='on') lines.push({c:'or',t:'Défaut batterie ou défaut carte E/S'});
+  if(S.sortie===true) lines.push({c:'vt',t:'LED sortie allumée → automate commande (TYPE 1 probable)'});
+  if(S.sortie===false) lines.push({c:'ja',t:'LED sortie éteinte → automate ne commande pas (TYPE 2 ou 3)'});
+  if(S.entrees==='incoherent') lines.push({c:'ja',t:'Entrée capteur incohérente (TYPE 2 probable)'});
+  if(S.entrees==='secu') lines.push({c:'rg',t:'Entrée sécurité inactive (TYPE 3 — sécurité/démarrage)'});
+  if(S.ihm) lines.push({c:S.ihm==='normal'?'vt':S.ihm==='aucune'?'gy':'or',t:'IHM : '+{aucune:'pas d\'IHM',normal:'affichage normal',alarme:'message d\'alarme → lire le texte',mode:'mode incorrect → remettre en AUTO',init:'demande d\'init → remettre en position',secu:'défaut sécurité → identifier et corriger'}[S.ihm]});
+
+  const typeMap={t1:'TYPE 1 — Chaîne d\'ACTION',t2:'TYPE 2 — Chaîne d\'ACQUISITION',t3:'TYPE 3 — SÉCURITÉ / DÉMARRAGE'};
+  const typeClass={t1:'bl',t2:'ja',t3:'vt'};
+  let html=lines.map(l=>`<div class="ibox ${l.c}" style="margin-bottom:6px;padding:8px 12px"><p style="font-size:13px">${l.t}</p></div>`).join('');
+  if(S.type){
+    html+=`<div class="ibox ${typeClass[S.type]}" style="margin-top:10px"><p><strong>Orientation : ${typeMap[S.type]}</strong><br>Passe aux tests correspondants ou affine avec le logiciel automate si disponible.</p></div>`;
+  } else {
+    html+=`<div class="ibox gy" style="margin-top:10px"><p>Informations insuffisantes pour orienter. Utilise l'arbre de décision avec le logiciel automate si disponible, ou consulte la <strong>Référence</strong>.</p></div>`;
+  }
+  d.innerHTML=html;
+}
+
+function goTestsFromObs(){if(S.type){nav('tests');}else{nav('arbre');}}
+
+function resetObs(){
+  S.leds={};S.sortie=null;S.entrees=null;S.ihm=null;
+  ['run','err','bat','com'].forEach(l=>{
+    document.getElementById('led-'+l).className='led led-off';
+    const onB=document.getElementById('btn-'+l+'-on');
+    const offB=document.getElementById('btn-'+l+'-off');
+    if(onB)onB.style.fontWeight='400';
+    if(offB)offB.style.fontWeight='400';
+  });
+  document.getElementById('api-diag-msg').style.display='none';
+  ['obs2','obs3','obs4'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  ['sortie-conseil','entrees-conseil','ihm-conseil'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  document.querySelectorAll('.ihm-msg-row').forEach(r=>r.classList.remove('sel'));
+  document.getElementById('obs1').scrollIntoView({behavior:'smooth'});
+}
+
+/* ── Arbre logiciel ────────────────────────────────────────────── */
+function resetArbre(){
+  document.getElementById('q1').style.display='';
+  document.getElementById('q2').style.display='none';
+  document.getElementById('q3').style.display='none';
+  document.getElementById('q-result').style.display='none';
+}
+function ansQ(q,yes){
+  if(q===1){if(yes){setType('t1','TYPE 1 — la sortie = 1 mais l\'actionneur ne réagit pas → chercher dans la chaîne d\'action.','vt');}else{document.getElementById('q1').style.display='none';document.getElementById('q2').style.display='';}}
+  else if(q===2){if(yes){setType('t2','TYPE 2 — l\'actionneur a bougé mais le capteur ne répond pas → chercher dans la chaîne d\'acquisition.','ja');}else{document.getElementById('q2').style.display='none';document.getElementById('q3').style.display='';}}
+  else{setType('t3','TYPE 3 — une condition de sécurité ou d\'initialisation n\'est pas satisfaite. Vérifier chaque élément de sécurité.','vt');}
+}
+function setType(t,msg,cls){
+  S.type=t;
+  document.getElementById('q-result-box').className='ibox '+cls;
+  document.getElementById('q-result-msg').textContent=msg;
+  document.getElementById('q-result').style.display='';
+}
+function goTests(){nav('tests');}
+
+/* ── Tests ─────────────────────────────────────────────────────── */
+function renderTests(){
+  if(!S.type)return;
+  const d=TESTS[S.type];
+  const list=document.getElementById('tests-list');
+  list.innerHTML='';
+  const cols={t1:'var(--blm)',t2:'var(--jam)',t3:'var(--vtm)'};
+  const col=cols[S.type];
+  d.items.forEach((item,i)=>{
+    const key=S.type+'_'+i;
+    const res=S.tests[key]||null;
+    const div=document.createElement('div');
+    div.className='test-item'+(res==='ok'?' ok-state':res==='nok'?' nok-state':'');
+    div.innerHTML=`<div class="test-header"><span class="test-n" style="color:${col}">Test ${i+1}/${d.items.length}</span><div class="test-checks"><button class="chk chk-ok${res==='ok'?' on-ok':''}" onclick="setRes(${i},'ok')">OK</button><button class="chk chk-nok${res==='nok'?' on-nok':''}" onclick="setRes(${i},'nok')">NOK</button></div></div><div class="test-pt">${item.pt}</div><div class="test-desc">${item.desc}</div><div class="test-tags"><span class="tag tag-tool">${item.tool}</span><span class="tag tag-ok">${item.ok}</span></div>${res==='nok'?'<div class="nok-banner">Panne localisée ici → passer à la conclusion</div>':''}`;
+    list.appendChild(div);
+  });
+  updateProg();
+  checkState();
+}
+
+function setRes(i,res){
+  const key=S.type+'_'+i;
+  S.tests[key]=res;
+  renderTests();
+  if(res==='nok'){
+    document.getElementById('test-panne').style.display='';
+    document.getElementById('test-allok').style.display='none';
+    document.getElementById('test-panne-desc').textContent=`Test ${i+1} NOK — "${TESTS[S.type].items[i].pt}". Ce composant est défaillant.`;
+  } else {checkState();}
+}
+
+function checkState(){
+  const d=TESTS[S.type];
+  const nok=d.items.some((_,i)=>S.tests[S.type+'_'+i]==='nok');
+  const allOk=d.items.every((_,i)=>S.tests[S.type+'_'+i]==='ok');
+  if(!nok) document.getElementById('test-panne').style.display='none';
+  document.getElementById('test-allok').style.display=(allOk&&!nok)?'':'none';
+}
+
+function updateProg(){
+  const d=TESTS[S.type];
+  const done=d.items.filter((_,i)=>S.tests[S.type+'_'+i]).length;
+  const pct=Math.round(done/d.items.length*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-lbl').textContent=`${done} / ${d.items.length} tests effectués (${pct}%)`;
+}
+
+/* ── Conclusion ────────────────────────────────────────────────── */
+function updateConclusionReport(){
+  const name=document.getElementById('inp-eleve').value.trim()||'Non renseigné';
+  const machine=document.getElementById('inp-sys').value.trim()||'Non renseigné';
+  const symptome=document.getElementById('inp-def').value.trim()||'Non renseigné';
+  const obs=document.getElementById('c-obs').value.trim()||'Non renseigné';
+  const comp=document.getElementById('c-comp').value.trim()||'Non renseigné';
+  const nat=document.getElementById('c-nat').value.trim()||'Non renseigné';
+  const action=document.getElementById('c-action').value.trim()||'Non renseigné';
+  const typeLabel = S.type === 't1' ? 'TYPE 1 — Action' : S.type === 't2' ? 'TYPE 2 — Acquisition' : S.type === 't3' ? 'TYPE 3 — Sécurité' : 'Non renseigné';
+  const setText=(id,text)=>{const el=document.getElementById(id); if(el) el.textContent=text;};
+  setText('c-info-name',name);
+  setText('c-info-machine',machine);
+  setText('c-info-symptome',symptome);
+  setText('print-intervenant',name);
+  setText('print-machine',machine);
+  setText('print-symptome',symptome);
+  setText('print-type',typeLabel);
+  setText('print-observe',obs);
+  setText('print-composant',comp);
+  setText('print-nature',nat);
+  setText('print-action',action);
+  const verifValues = VERIF.map((v,i)=>S.verif[i] ? `✓ ${v}` : `✗ ${v}`);
+  setText('print-verifs',verifValues.join(' | '));
+}
+
+function renderConclusion(){
+  updateConclusionReport();
+
+  const vc=document.getElementById('verif-list');
+  vc.innerHTML='';
+  VERIF.forEach((v,i)=>{
+    const on=S.verif[i];
+    const d=document.createElement('div');
+    d.className='chkrow';
+    d.onclick=()=>{S.verif[i]=!on;renderConclusion();};
+    d.innerHTML=`<div class="chkbox${on?' on':''}"></div><span class="chkrow-txt">${v}</span>`;
+    vc.appendChild(d);
+  });
+  if(S.type){const map={t1:'tsb1',t2:'tsb2',t3:'tsb3'};document.querySelectorAll('.type-sel-btn').forEach(b=>b.classList.remove('sel'));document.getElementById(map[S.type]).classList.add('sel');}
+}
+
+function selType(el){
+  document.querySelectorAll('.type-sel-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  if(el.id==='tsb1') S.type='t1';
+  else if(el.id==='tsb2') S.type='t2';
+  else if(el.id==='tsb3') S.type='t3';
+}
+
+/* ── LOTO ──────────────────────────────────────────────────────── */
+function renderLoto(){
+  const ls=document.getElementById('loto-steps');
+  ls.innerHTML='';
+  LOTO_STEPS.forEach(s=>{const d=document.createElement('div');d.className='loto-step';d.innerHTML=`<div class="loto-num" style="background:${s.col}">${s.n}</div><div class="loto-body"><h4>${s.title}</h4><p>${s.desc}</p></div>`;ls.appendChild(d);});
+  const et=document.getElementById('energy-table');
+  et.innerHTML='';
+  ENERGIES.forEach((e,i)=>{const st=S.energy[i]||{};const d=document.createElement('div');d.className='energy-row';d.innerHTML=`<div class="energy-main"><div class="en">${e.name}</div><div class="ei">${e.info}</div></div><div class="energy-btns"><div class="mc mc-c${st.c?' on':''}" onclick="toggleE(${i},'c')">🔒</div><div class="mc mc-e${st.e?' on':''}" onclick="toggleE(${i},'e')">🏷️</div><div class="mc mc-v${st.v?' on':''}" onclick="toggleE(${i},'v')">✓</div></div>`;et.appendChild(d);});
+  const dc=document.getElementById('decons-list');
+  dc.innerHTML='';
+  DECONS.forEach((v,i)=>{const on=S.decons[i];const d=document.createElement('div');d.className='chkrow';d.onclick=()=>{S.decons[i]=!on;renderLoto();};d.innerHTML=`<div class="chkbox${on?' on':''}"></div><span class="chkrow-txt">${v}</span>`;dc.appendChild(d);});
+}
+
+function toggleE(i,key){if(!S.energy[i])S.energy[i]={};S.energy[i][key]=!S.energy[i][key];renderLoto();}
+
+/* ── Récap ─────────────────────────────────────────────────────── */
+function renderRecap(){
+  const c=document.getElementById('recap-cards');
+  c.innerHTML='';
+  RECAP.forEach(r=>{const d=document.createElement('div');d.className='recap-card '+r.cls;d.onclick=()=>{S.type='t'+r.n;nav('tests');};d.innerHTML=`<div class="rc-header"><div class="rc-num" style="background:${r.nc}">${r.n}</div><div class="rc-name">${r.name}</div></div><div class="rc-crit"><span class="rc-crit-lbl">LED sortie API</span><span class="rc-crit-val">${r.crit}</span><span class="rc-crit-lbl">Grafcet</span><span class="rc-crit-val">${r.graf}</span><span class="rc-crit-lbl">Sécurités</span><span class="rc-crit-val">${r.secu}</span><span class="rc-crit-lbl">Symptôme</span><span class="rc-crit-val">${r.symp}</span></div><div style="margin-top:8px;font-size:10px;color:var(--grm);font-weight:600">Appuyer → aller aux tests</div>`;c.appendChild(d);});
+}
+
+function resetConclusionInputs(){
+  const ids=['inp-eleve','inp-sys','inp-def','c-obs','c-comp','c-nat','c-action'];
+  ids.forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  S.type=null;
+  S.verif={};
+  renderConclusion();
+}
+
+function initApp(){
+  S={type:null,tests:{},energy:{},verif:{},decons:{},leds:{},sortie:null,entrees:null,ihm:null};
+  resetObs();
+  resetConclusionInputs();
+  nav('home');
+}
+
+document.addEventListener('DOMContentLoaded', initApp);
+
+/* ── Init ──────────────────────────────────────────────────────── */
+renderConclusion();
+</script>
+
+
+</body></html>
